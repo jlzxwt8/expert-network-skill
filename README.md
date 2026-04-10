@@ -1,75 +1,78 @@
-# Expert Network Skill
+# Help & Grow Expert Network — Multi-Agent Skill Package
 
-An [OpenClaw](https://docs.openclaw.ai/)-compatible skill for the **Help&Grow Expert Network** — a platform connecting users with verified domain experts for 1-on-1 consultations.
+A universal, adaptable, and scalable skill package that teaches your AI agent to interact with the **Help&Grow Expert Network** — a platform connecting users with verified domain experts for 1-on-1 consultations.
 
-Works with **QClaw**, **WorkBuddy**, **OpenClaw**, and any AgentSkills-compatible AI agent.
+This package is designed following best practices for multi-agent interoperability. It is **fully compatible** with modern agentic frameworks, including:
 
-## What It Does
+- **Alibaba Cloud HiClaw / DashScope**
+- **Google Cloud Scion / Vertex AI Agents**
+- **OpenClaw & QClaw**
+- **Hermes Agent Framework**
+- **BytePlus (Coze / Similar Multi-Agent Frameworks)**
+- **MCP (Model Context Protocol) Clients**
 
-This skill teaches your AI agent to:
+## What This Skill Does
 
+By integrating this skill, your agent gains the ability to:
 - **Search experts** by domain, keyword, or session type
-- **Match experts** to your needs using natural language descriptions
+- **Match experts** to complex user needs using natural language
 - **View expert profiles** with bio, services, ratings, and pricing
 - **Check availability** and find open time slots
-- **Direct you to book** a consultation session
+- **Direct users to book** a consultation session directly
 
-### Available Domains
+## Integration Guides
 
-Marketing & BD · Headhunter · Law · Funding
+This repository provides multiple formats to ensure maximum compatibility across any framework.
 
-## Install
+### 1. OpenAPI Specification (Recommended for HiClaw, Scion, BytePlus, Hermes)
+Most modern enterprise agent frameworks support importing tools directly via an OpenAPI specification. 
 
-### QClaw / OpenClaw
+- **File**: [`openapi.yaml`](./openapi.yaml)
+- **Usage**: 
+  1. Go to your Agent Builder (e.g., Alibaba DashScope Plugins, BytePlus Coze Tools, or Google Vertex AI Extensions).
+  2. Select "Import Tool from OpenAPI".
+  3. Upload the `openapi.yaml` file from this repository.
+  4. The framework will automatically generate the `getDomains`, `searchExperts`, `matchExperts`, `getExpertProfile`, and `getExpertAvailability` tools.
 
-Import from GitHub in QClaw, or copy manually:
+### 2. Model Context Protocol (MCP)
+If you are using an MCP-compatible agent (like Claude Desktop or an MCP-enabled custom framework):
+- The Help & Grow backend natively exposes an MCP server at `https://expert-network.vercel.app/api/mcp`.
+- Connect your agent directly to the endpoint to dynamically load all available tools and schema updates.
+
+### 3. OpenClaw / QClaw (Markdown Skill)
+For lightweight markdown-based agents, use the standard `SKILL.md` file.
 
 ```bash
-# Clone into your skills directory
+# Clone into your OpenClaw skills directory
 git clone https://github.com/jlzxwt8/expert-network-skill.git ~/.openclaw/skills/expert-network
 ```
-
-Then start a new session.
-
-### WorkBuddy / CodeBuddy
-
+Or import via npm for WorkBuddy/CodeBuddy:
 ```bash
 npx skills add jlzxwt8/expert-network-skill
 ```
 
-### Manual
+## API Endpoints Overview
 
-Copy the `SKILL.md` file into your agent's skills directory.
+All endpoints are public (no authentication required) and return standardized JSON.
 
-## Usage
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/domains` | GET | List all available expertise domains |
+| `/api/v1/experts` | GET | Search experts with filters (`q`, `domain`, `limit`) |
+| `/api/v1/match` | GET | Natural language expert matching (AI-powered) |
+| `/api/experts/{id}` | GET | Get full expert profile |
+| `/api/experts/{id}/slots` | GET | Check real-time availability slots |
 
-Once installed, just ask your agent naturally:
+**Base URL**: `https://expert-network.vercel.app`
 
-- "Find me a marketing expert"
-- "I need help with fundraising for my Series A"
-- "Show me experts available for online consultations"
-- "Check if David has any open slots"
+## Best Practices for Agent Prompts
 
-The agent will call the Expert Network API and present results with booking links.
+When configuring your agent's system prompt to use these tools, include these instructions for the best user experience:
 
-## API Endpoints
-
-The skill uses these public endpoints (no auth required):
-
-| Endpoint | Description |
-|---|---|
-| `GET /api/v1/domains` | List all expertise domains |
-| `GET /api/v1/experts?q=...&domain=...` | Search experts |
-| `GET /api/v1/match?q=...` | Natural language expert matching |
-| `GET /api/experts/{id}` | Get expert profile |
-| `GET /api/experts/{id}/slots` | Check availability |
-
-Base URL: `https://expert-network.vercel.app`
-
-## Links
-
-- **Platform**: https://expert-network.vercel.app
-- **Source**: https://github.com/jlzxwt8/expert-network
+1. **Understand the Need**: Ask clarifying questions if the user's request is vague before searching.
+2. **Prefer `/match` over `/experts`**: If the user describes a complex problem (e.g., "I need help scaling my B2B SaaS"), use the `matchExperts` tool instead of keyword search.
+3. **Present Clearly**: When showing results, always include the expert's name, their primary domains, a 1-sentence bio summary, their rating, and their pricing.
+4. **Always Provide Booking Links**: Append the expert's profile URL (`https://expert-network.vercel.app/experts/{id}`) so the user can easily book the session.
 
 ## License
 

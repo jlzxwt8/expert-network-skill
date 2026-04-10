@@ -1,0 +1,218 @@
+openapi: 3.1.0
+info:
+  title: Help & Grow Expert Network API
+  description: Search, discover, and book expert consultations on the Help&Grow Expert Network. Compatible with OpenClaw, HiClaw (Alibaba Cloud), Scion (Google Cloud), Hermes, and BytePlus Coze.
+  version: 1.0.0
+servers:
+  - url: https://expert-network.vercel.app
+    description: Production server
+paths:
+  /api/v1/domains:
+    get:
+      operationId: getDomains
+      summary: List available expertise domains
+      description: Returns a list of all expertise domains available on the platform (e.g., Marketing & BD, Headhunter, Law, Funding).
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domains:
+                    type: array
+                    items:
+                      type: string
+  /api/v1/experts:
+    get:
+      operationId: searchExperts
+      summary: Search for experts
+      description: Search for experts by keyword, domain, or session type.
+      parameters:
+        - name: q
+          in: query
+          description: Free-text search matching name or bio
+          required: false
+          schema:
+            type: string
+        - name: domain
+          in: query
+          description: Filter by domain (comma-separated)
+          required: false
+          schema:
+            type: string
+        - name: sessionType
+          in: query
+          description: Filter by session type (ONLINE, OFFLINE, BOTH)
+          required: false
+          schema:
+            type: string
+            enum: [ONLINE, OFFLINE, BOTH]
+        - name: limit
+          in: query
+          description: Maximum number of results to return (default 10)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+      responses:
+        '200':
+          description: A list of matching experts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExpertSummary'
+  /api/v1/match:
+    get:
+      operationId: matchExperts
+      summary: Natural language expert matching
+      description: Describe the help needed in natural language and get personalized expert recommendations.
+      parameters:
+        - name: q
+          in: query
+          description: A natural language description of the problem or need
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ranked expert recommendations with match reasons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        expert:
+                          $ref: '#/components/schemas/ExpertSummary'
+                        reason:
+                          type: string
+                          description: Explanation of why this expert is a good match
+  /api/experts/{expertId}:
+    get:
+      operationId: getExpertProfile
+      summary: Get full expert profile
+      description: Retrieves the full details of a specific expert.
+      parameters:
+        - name: expertId
+          in: path
+          required: true
+          description: The unique identifier of the expert
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full expert profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpertProfile'
+  /api/experts/{expertId}/slots:
+    get:
+      operationId: getExpertAvailability
+      summary: Check expert availability
+      description: Get available time slots for a specific expert.
+      parameters:
+        - name: expertId
+          in: path
+          required: true
+          description: The unique identifier of the expert
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Availability slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        startTime:
+                          type: string
+                          format: date-time
+                        endTime:
+                          type: string
+                          format: date-time
+                        isBooked:
+                          type: boolean
+                  bookedSlots:
+                    type: array
+                    items:
+                      type: object
+
+components:
+  schemas:
+    ExpertSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        bio:
+          type: string
+        domains:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+        priceOnlineCents:
+          type: integer
+        priceOfflineCents:
+          type: integer
+        profileUrl:
+          type: string
+    ExpertProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        bio:
+          type: string
+        domains:
+          type: array
+          items:
+            type: string
+        services:
+          type: string
+        rating:
+          type: number
+        priceOnlineCents:
+          type: integer
+        priceOfflineCents:
+          type: integer
+        sessionType:
+          type: string
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              rating:
+                type: integer
+              comment:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
